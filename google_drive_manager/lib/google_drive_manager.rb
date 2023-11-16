@@ -10,10 +10,11 @@ module GoogleDriveManager
     include Enumerable
 
     def initialize(session, key, index)
+      raise "Session is not initialized" if session.nil?
       @ws = session.spreadsheet_by_key(key).worksheets[index]
       @header = rows.first
     end
-
+    
     def rows
       @ws.rows.reject { |row| row.any? { |cell| cell.downcase.include?("total") || cell.downcase.include?("subtotal") } }
     end
@@ -47,35 +48,32 @@ module GoogleDriveManager
     def +(other)
       raise Error.new("Headers do not match") unless @header == other.rows.first
     
-      new_rows = rows.zip(other.rows[1..-1]).map do |row1, row2|
+      new_rows = rows[1..-1].zip(other.rows[1..-1]).map do |row1, row2|
         next [] if row2.nil?
     
         row1.map.with_index { |cell, i| cell.to_i + row2[i].to_i }
       end
     
-      new_sheet = Sheet.new(@session, @key, @index)
-      new_sheet.ws.clear
-      new_sheet.ws.update_cells(1, 1, [@header] + new_rows)
-      new_sheet.ws.save
+      @ws.update_cells(1, 1, [@header] + new_rows)
+      @ws.save
     
-      new_sheet
-    end
+      self
+    end   
     
 
     def -(other)
       raise Error.new("Headers do not match") unless rows.first == other.rows.first
     
-      new_rows = rows.zip(other.rows[1..-1]).map do |row1, row2|
-        row1.map.with_index { |cell, i| cell.to_i - row2[i].to_i }
+      new_rows = rows[1..-1].zip(other.rows[1..-1]).map do |row1, row2|
+        row1.map.with_index { |cell, i| cell.to_i - (row2.nil? ? 0 : row2[i].to_i) }
       end
     
-      new_sheet = Sheet.new(@session, @key, @index)
-      new_sheet.ws.clear
-      new_sheet.ws.update_cells(1, 1, [@header] + new_rows)
-      new_sheet.ws.save
+      @ws.clear
+      @ws.update_cells(1, 1, [@header] + new_rows)
+      @ws.save
     
-      new_sheet
-    end   
+      self
+    end    
         
 
     class Column
