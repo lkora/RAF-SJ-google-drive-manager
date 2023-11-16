@@ -51,4 +51,8 @@ class TestGoogleDriveManager < Minitest::Test
   def test_table_union
     @sheet + @new_sheet
   end
+
+  def test_table_subtraction
+    @sheet - @new_sheet
+  end
 end
