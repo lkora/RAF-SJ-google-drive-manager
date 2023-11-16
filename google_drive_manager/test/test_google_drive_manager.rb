@@ -45,7 +45,7 @@ class TestGoogleDriveManager < Minitest::Test
   end
 
   def test_map
-    assert_equal ["Prva Kolona", "1", "2", "5"], @sheet.prva_kolona.map { |cell| cell.to_i + 1 }
+    assert_equal ["1", "1", "2", "5"], @sheet.prva_kolona.map { |cell| cell.to_i + 1 }
   end
 
   def test_table_union

@@ -86,6 +86,10 @@ module GoogleDriveManager
         (1..@ws.num_rows).map { |row_index| self[row_index - 1] }
       end
 
+      def map(&block)
+        to_a.map(&block)
+      end
+
       def [](row_index)
         @ws[row_index + 1, @index]
       end
