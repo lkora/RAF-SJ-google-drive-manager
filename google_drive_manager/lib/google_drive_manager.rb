@@ -68,7 +68,7 @@ module GoogleDriveManager
         row1.map.with_index { |cell, i| cell.to_i - (row2.nil? ? 0 : row2[i].to_i) }
       end
     
-      @ws.clear
+      @ws.delete_rows(1, @ws.num_rows) 
       @ws.update_cells(1, 1, [@header] + new_rows)
       @ws.save
     
@@ -90,8 +90,23 @@ module GoogleDriveManager
         to_a.map(&block)
       end
 
+      def select(&block)
+        to_a.select(&block)
+      end
+    
+      def reduce(initial = nil, &block)
+        to_a.reduce(initial, &block)
+      end
+
       def [](row_index)
-        @ws[row_index + 1, @index]
+        if row_index.is_a? Integer
+          @ws[row_index + 1, @index]
+        elsif row_index.is_a? String
+          row_number = (1..@ws.num_rows).find { |i| @ws[i, @index] == row_index }
+          row_number.nil? ? nil : row_number - 1
+        else
+          raise ArgumentError, "row_index must be an Integer or String. If row is Integer it will return the value stored at that row for the given column, if the row is a string it will find the row with that value and return it's number."
+        end
       end
 
       def []=(row_index, value)
@@ -108,18 +123,10 @@ module GoogleDriveManager
       end
 
       def method_missing(name, *args, &block)
-        if name.to_s =~ /^\d+$/
-          row_index = to_a.index(name.to_s)
-          if row_index
-            self[row_index]
-          else
-            super
-          end
-        else
-          super
-        end
+        column_name = name.to_s.gsub('_', ' ').capitalize
+        self[column_name] if @header.include?(column_name) || super
       end
-        
+              
 
       def each
         to_a.each { |cell| yield cell }
