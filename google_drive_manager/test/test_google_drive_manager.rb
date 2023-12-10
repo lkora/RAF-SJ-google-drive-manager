@@ -2,7 +2,8 @@
 
 require "test_helper"
 
-class TestGoogleDriveManager < Minitest::Test
+class TestGoogleDriveManager < Minitest::Test/
+  # Needed for reducing calls numbers to the GAPI when reseting the sheet for the test
   i_suck_and_my_tests_are_order_dependent!
 
   def setup
